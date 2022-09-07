@@ -1,0 +1,64 @@
+BETA FORMAT
+
+'-112.3 -494.4 8.0'		origin
+1						id
+8						link1
+14						link2
+19						link3
+55						link4
+8						owner1 (?)
+14						owner2 (?)
+19						owner3 (?)
+55						owner4 (?)
+
+link set to 0 if absent
+fixed length of 10 for beta 1.1
+fixed length of 13 for beta 1.2 (unreleased)
+4(?) links maximum
+id starts at 1
+no header at all
+no idea what 'owner' means yet 
+corresponds to link for the most part
+
+PSP FORMAT
+
+Waypoint
+{
+origin = '280.0 460.0 40.0'
+id = 1
+special = 
+target = 2
+target2 = 
+target3 = 
+target4 = 
+target5 = 
+target6 = 
+target7 = 
+target8 = 
+}
+
+field set to ' ' if absent
+fixed length of 14 with new line separation
+8 links maximum
+id starts at 1
+header uses capital 'W'
+
+PC FORMAT
+
+waypoint
+{
+ id: 8
+ origin: '710.0 156.0 40.0'
+ door: stack
+ targets:
+ [
+  7
+  17
+ ]
+}
+
+absent fields are excluded
+variable length with new line separation
+no limit on number of links
+id starts at 0
+header uses lower case 'w'

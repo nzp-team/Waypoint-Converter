@@ -1,2 +1,2 @@
 # NZP Waypoint Converter
- Converts waypoints from PSP to PC format
+ Converts waypoints from BETA/PSP to PC format
