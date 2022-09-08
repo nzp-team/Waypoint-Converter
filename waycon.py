@@ -1,17 +1,35 @@
-import sys
+import sys, argparse
 
-# FIXME Ability to convert to other formats instead of just PC
 def parseArgs():
-	if len(sys.argv) == 1: # No arguments supplied
+	# Do things interactively if no arguments supplied
+	if len(sys.argv) == 1:
 		inputFile = input("Enter location of input file: ")
 		outputFile = input("Enter name of output file: ")
-		startConversion(inputFile, outputFile)
-	elif len(sys.argv) == 3:
-		startConversion(sys.argv[1], sys.argv[2])
-	else:
-		print("YOU TWONK")
+		# Choose waypoint format (PC, PSP, BETA)
+		wayFormat = ""
+		while not (wayFormat.upper() in ("PC", "PSP", "BETA")):
+			print("Select desired waypoint format: ")
+			print("[PC/PSP/BETA]")
+			wayFormat = input()
+		# Begin conversion process
+		startConversion(inputFile, outputFile, wayFormat)
 
-def startConversion(inputFile, outputFile):
+	# Handle command line arguments 'properly'
+	parser = argparse.ArgumentParser(description='Converts NZP Waypoints between formats')
+	parser.add_argument("input", type=str, help="Location of input file")
+	parser.add_argument("output", type=str, help="Name of output file")
+	parser.add_argument("format", type=str, help="Desired waypoint format")
+	args = parser.parse_args()
+	inputFile = args.input
+	outputFile = args.output
+	wayFormat = args.format
+	# Enforce proper waypoint format selection
+	if not (wayFormat.upper() in ("PC", "PSP", "BETA")):
+		raise ValueError("Invalid format specified")
+	# Begin conversion process
+	startConversion(inputFile, outputFile, wayFormat)
+
+def startConversion(inputFile, outputFile, wayFormat):
 	# Correct the file extension
 	if not(outputFile.lower().endswith(".way")):
 		outputFile += ".way"
