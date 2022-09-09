@@ -1,3 +1,4 @@
+#!/bin/env python
 import sys, argparse
 
 def parseArgs():
@@ -43,7 +44,7 @@ def startConversion(inputFile, outputFile, wayFormat):
 		print("PSP format detected")
 		if wayFormat.upper() == "PSP":
 			raise ValueError("Already in PSP format!")
-		wayArray = parsePSP(oldWayFile)
+		wayArray = parseOLD(oldWayFile, "PSP", 15, 2, 14)
 	elif header == "waypoint": # PC
 		print("PC format detected")
 		if wayFormat.upper() == "PC":
@@ -61,7 +62,7 @@ def startConversion(inputFile, outputFile, wayFormat):
 				print("BETA format detected")
 				if wayFormat.upper() == "BETA":
 					raise ValueError("Already in BETA format!")
-				wayArray = parseBETA(oldWayFile)
+				wayArray = parseOLD(oldWayFile, "BETA", 10, 0, 7)
 			except ValueError:
 				print("Invalid waypoint co-ords")
 	
@@ -70,24 +71,35 @@ def startConversion(inputFile, outputFile, wayFormat):
 		print(waypoint)
 	exit(0)
 
-# Hmmm, this seems awfully similar to the other one. Maybe refactor later.
-def parsePSP(oldWayFile):
+def parseOLD(oldWayFile, detFormat, numLines, startL, endL):
 	tempArray = [] # Temporarily stores waypoint fields
 	wayArray = [] # Array of waypoints
+	# Value for empty fields
+	if detFormat == "BETA":
+		blank = "0"
+	else:
+		blank = ""
+	# Start processing waypoints
 	for i, line in enumerate(oldWayFile):
-		relativeLineNum = (i+1)%15 # 15 lines per waypoint inc. empty line
+		relativeLineNum = (i+1)%numLines
 		# Ignore header stuff
-		if relativeLineNum > 2 and relativeLineNum < 14:
+		if relativeLineNum > startL and relativeLineNum < endL:
 			# Add data from field to temporary array
-			tempArray.append(line[line.index('=')+2:].strip())
-		if relativeLineNum == 14: # Reached end of that waypoint
+			if detFormat == "PSP":
+				tempArray.append(line[line.index('=')+2:].strip())
+			else:
+				tempArray.append(line.strip())
+		if relativeLineNum == endL: # Reached end of that waypoint
+			# NZP Beta 1.1 doesn't have special door targets
+			if detFormat == "BETA":
+				tempArray.insert(2,"")
 			# Store waypoint fields in dictionary
 			waydict = {
 				"origin": tempArray[0],
 				"id": tempArray[1],
 				"door": tempArray[2],
 				# Remove empty targets
-				"targets": [value for value in tempArray[3:] if value != ""]
+				"targets": [value for value in tempArray[3:] if value != blank]
 			}
 			tempArray.clear() # Clear temporary array for next waypoint
 			wayArray.append(waydict) # Add waypoint to array
@@ -95,25 +107,5 @@ def parsePSP(oldWayFile):
 
 def parsePC(oldWayFile):
 	return ["Notsee", "Zombies", "Portable", "2"]
-
-def parseBETA(oldWayFile):
-	tempArray = [] # Temporarily stores waypoint fields
-	wayArray = [] # Array of waypoints
-	for i, line in enumerate(oldWayFile):
-		relativeLineNum = (i+1)%10 # 10 lines per waypoint
-		# Ignore 'owner' fields as they don't apply to modern format
-		if relativeLineNum > 0 and relativeLineNum < 7:
-			tempArray.append(line.strip()) # Add field to temporary array
-		if relativeLineNum == 0: # Reached end of that waypoint
-			# Store waypoint fields in dictionary
-			waydict = {
-				"origin": tempArray[0],
-				"id": tempArray[1],
-				# Remove empty targets
-				"targets": [value for value in tempArray[2:] if value != "0"]
-			}
-			tempArray.clear() # Clear temporary array for next waypoint
-			wayArray.append(waydict) # Add waypoint to array
-	return wayArray
 
 parseArgs()
