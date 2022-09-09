@@ -1,4 +1,3 @@
-#!/bin/env python
 import sys, argparse
 
 def parseArgs():
