@@ -68,9 +68,30 @@ def startConversion(inputFile, outputFile, wayFormat):
 	# Print out waypoint for now I guess
 	for waypoint in wayArray:
 		print(waypoint)
+	exit(0)
 
+# Hmmm, this seems awfully similar to the other one. Maybe refactor later.
 def parsePSP(oldWayFile):
-	return ["This", "is", "a", "test"]
+	tempArray = [] # Temporarily stores waypoint fields
+	wayArray = [] # Array of waypoints
+	for i, line in enumerate(oldWayFile):
+		relativeLineNum = (i+1)%15 # 15 lines per waypoint inc. empty line
+		# Ignore header stuff
+		if relativeLineNum > 2 and relativeLineNum < 14:
+			# Add data from field to temporary array
+			tempArray.append(line[line.index('=')+2:].strip())
+		if relativeLineNum == 14: # Reached end of that waypoint
+			# Store waypoint fields in dictionary
+			waydict = {
+				"origin": tempArray[0],
+				"id": tempArray[1],
+				"door": tempArray[2],
+				# Remove empty targets
+				"targets": [value for value in tempArray[3:] if value != ""]
+			}
+			tempArray.clear() # Clear temporary array for next waypoint
+			wayArray.append(waydict) # Add waypoint to array
+	return wayArray
 
 def parsePC(oldWayFile):
 	return ["Notsee", "Zombies", "Portable", "2"]
@@ -79,11 +100,11 @@ def parseBETA(oldWayFile):
 	tempArray = [] # Temporarily stores waypoint fields
 	wayArray = [] # Array of waypoints
 	for i, line in enumerate(oldWayFile):
-		relativeLineNum = (i+1)%10
+		relativeLineNum = (i+1)%10 # 10 lines per waypoint
 		# Ignore 'owner' fields as they don't apply to modern format
-		if relativeLineNum < 7 and relativeLineNum != 0:
+		if relativeLineNum > 0 and relativeLineNum < 7:
 			tempArray.append(line.strip()) # Add field to temporary array
-		if (i+1)%10 == 0: # Reached end of that waypoint
+		if relativeLineNum == 0: # Reached end of that waypoint
 			# Store waypoint fields in dictionary
 			waydict = {
 				"origin": tempArray[0],
