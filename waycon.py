@@ -106,6 +106,28 @@ def parseOLD(oldWayFile, detFormat, numLines, startL, endL):
 	return wayArray
 
 def parsePC(oldWayFile):
-	return ["Notsee", "Zombies", "Portable", "2"]
+	tempArray = [] # Temporarily stores waypoint fields
+	wayArray = [] # Array of waypoints
+	# Start processing waypoints
+	for i, line in enumerate(oldWayFile):
+		# Accept whatever for now, we'll yeet the fluff once waypoint is read
+		if line.strip() != "":
+			tempArray.append(line.strip())
+		if line.strip() == "}": # Reached end of that waypoint
+			# Check if door target present
+			if tempArray[4][:4] == "door":
+				tempArray[4] = tempArray[4][6:]
+			else:
+				tempArray.insert(4,"") # No door so keep it blank
+			# Store waypoint fields in dictionary
+			waydict = {
+				"origin": tempArray[3][8:],
+				"id": tempArray[2][4:],
+				"door": tempArray[4],
+				"targets": tempArray[7:-2]
+			}
+			tempArray.clear() # Clear temporary array for next waypoint
+			wayArray.append(waydict) # Add waypoint to array
+	return wayArray
 
 parseArgs()
