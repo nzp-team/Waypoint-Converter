@@ -68,6 +68,8 @@ def startConversion(inputFile, outputFile, wayFormat):
 	# Print out waypoint for now I guess
 	if wayFormat == "BETA":
 		saveBETA(wayArray, outputFile)
+	if wayFormat == "PSP":
+		savePSP(wayArray, outputFile)
 	print("Conversion complete")
 	exit(0)
 
@@ -149,5 +151,27 @@ def saveBETA(wayArray, outputFile):
 			[outF.write(waypoint["targets"][i] + "\n") for i in range(4)]
 			# Fill out 'owner' fields just in case
 			[outF.write(waypoint["targets"][i] + "\n") for i in range(4)]
+
+def savePSP(wayArray, outputFile):
+	print("WARNING: PSP format is limited to 8 links per waypoint")
+	with open(outputFile, "w") as outF:
+		for waypoint in wayArray:
+			outF.write("Waypoint\n{\n") # Header
+			outF.write(f"origin = {waypoint['origin']}\n")
+			outF.write(f"id = {waypoint['id']}\n")
+			outF.write(f"special = {waypoint['door']}\n")
+			# Only do 1st eight links (Mapper may need to tweak waypoints)
+			numTargets = len(waypoint["targets"])
+			# Pad out list with '' for empty links
+			if numTargets < 8:
+				for i in range(8-numTargets):
+					waypoint["targets"].append("")
+			# Warn user if waypoint has too many links
+			if numTargets > 8:
+				print(f"Waypoint {waypoint['id']} has more than 8 links")
+			# Write waypoint links to file
+			outF.write(f"target = {waypoint['targets'][0]}\n")
+			[outF.write(f"target{i+1} = {waypoint['targets'][i]}\n") for i in range(1,8)]
+			outF.write("}\n\n") # Footer of waypoint
 
 parseArgs()
