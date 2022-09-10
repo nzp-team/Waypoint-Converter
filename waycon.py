@@ -7,10 +7,10 @@ def parseArgs():
 		outputFile = input("Enter name of output file: ")
 		# Choose waypoint format (PC, PSP, BETA)
 		wayFormat = ""
-		while not (wayFormat.upper() in ("PC", "PSP", "BETA")):
+		while not (wayFormat in ("PC", "PSP", "BETA")):
 			print("Select desired waypoint format: ")
 			print("[PC/PSP/BETA]")
-			wayFormat = input()
+			wayFormat = input().upper()
 		# Begin conversion process
 		startConversion(inputFile, outputFile, wayFormat)
 
@@ -22,16 +22,16 @@ def parseArgs():
 	args = parser.parse_args()
 	inputFile = args.input
 	outputFile = args.output
-	wayFormat = args.format
+	wayFormat = args.format.upper()
 	# Enforce proper waypoint format selection
-	if not (wayFormat.upper() in ("PC", "PSP", "BETA")):
+	if not (wayFormat in ("PC", "PSP", "BETA")):
 		raise ValueError("Invalid format specified")
 	# Begin conversion process
 	startConversion(inputFile, outputFile, wayFormat)
 
 def startConversion(inputFile, outputFile, wayFormat):
 	# Correct the file extension
-	if not(outputFile.lower().endswith(".way")):
+	if not(outputFile.lower().endswith(".way")) and wayFormat != "BETA":
 		outputFile += ".way"
 	# Read in old waypoints
 	with open(inputFile, "r") as tempF:
@@ -41,12 +41,12 @@ def startConversion(inputFile, outputFile, wayFormat):
 	header = oldWayFile[0].strip("\n")
 	if header == "Waypoint": # PSP
 		print("PSP format detected")
-		if wayFormat.upper() == "PSP":
+		if wayFormat == "PSP":
 			raise ValueError("Already in PSP format!")
 		wayArray = parseOLD(oldWayFile, "PSP", 15, 2, 14)
 	elif header == "waypoint": # PC
 		print("PC format detected")
-		if wayFormat.upper() == "PC":
+		if wayFormat == "PC":
 			raise ValueError("Already in PC format!")
 		wayArray = parsePC(oldWayFile)
 	else: # Check if BETA or just random crap
@@ -59,15 +59,16 @@ def startConversion(inputFile, outputFile, wayFormat):
 				for i in range(len(where)):
 					float(where[i])
 				print("BETA format detected")
-				if wayFormat.upper() == "BETA":
+				if wayFormat == "BETA":
 					raise ValueError("Already in BETA format!")
 				wayArray = parseOLD(oldWayFile, "BETA", 10, 0, 7)
 			except ValueError:
 				print("Invalid waypoint co-ords")
 	
 	# Print out waypoint for now I guess
-	for waypoint in wayArray:
-		print(waypoint)
+	if wayFormat == "BETA":
+		saveBETA(wayArray, outputFile)
+	print("Conversion complete")
 	exit(0)
 
 def parseOLD(oldWayFile, detFormat, numLines, startL, endL):
@@ -128,5 +129,25 @@ def parsePC(oldWayFile):
 			tempArray.clear() # Clear temporary array for next waypoint
 			wayArray.append(waydict) # Add waypoint to array
 	return wayArray
+
+def saveBETA(wayArray, outputFile):
+	print("WARNING: NZP Beta is limited to 4 links per waypoint")
+	with open(outputFile, "w") as outF:
+		for waypoint in wayArray:
+			outF.write(waypoint["origin"] + "\n")
+			outF.write(waypoint["id"] + "\n")
+			# Only do 1st four links (Mapper would need to redo waypoints)
+			numTargets = len(waypoint["targets"])
+			# Pad out list with 0 for empty links
+			if numTargets < 4:
+				for i in range(4-numTargets):
+					waypoint["targets"].append("0")
+			# Warn user if waypoint has too many links
+			if numTargets > 4:
+				print(f"Waypoint {waypoint['id']} has more than 4 links")
+			# Write waypoint links to file
+			[outF.write(waypoint["targets"][i] + "\n") for i in range(4)]
+			# Fill out 'owner' fields just in case
+			[outF.write(waypoint["targets"][i] + "\n") for i in range(4)]
 
 parseArgs()
