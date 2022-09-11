@@ -126,8 +126,12 @@ def parsePC(oldWayFile):
 				"origin": tempArray[3][8:],
 				"id": tempArray[2][4:],
 				"door": tempArray[4],
-				"targets": tempArray[7:-2]
+				# Replace links to waypoint 0
+				"targets": ["255" if value == "0" else value for value in tempArray[7:-2]]
 			}
+			# Replace id 0
+			if waydict["id"] == "0":
+				waydict["id"] = "255" # I sure do hope nobody has this many waypoints
 			tempArray.clear() # Clear temporary array for next waypoint
 			wayArray.append(waydict) # Add waypoint to array
 	return wayArray
@@ -153,7 +157,8 @@ def saveBETA(wayArray, outputFile):
 			[outF.write(waypoint["targets"][i] + "\n") for i in range(4)]
 
 def savePSP(wayArray, outputFile):
-	print("WARNING: PSP format is limited to 8 links per waypoint")
+	# Come to think of it, who needs more than 8 links anyways?
+	#print("WARNING: PSP format is limited to 8 links per waypoint")
 	with open(outputFile, "w") as outF:
 		for waypoint in wayArray:
 			outF.write("Waypoint\n{\n") # Header

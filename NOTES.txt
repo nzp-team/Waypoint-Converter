@@ -37,7 +37,7 @@ target7 =
 target8 = 
 }
 
-field set to ' ' if absent
+field set to '' if absent
 fixed length of 14 with new line separation
 8 links maximum
 id starts at 1
@@ -59,6 +59,8 @@ waypoint
 
 absent fields are excluded
 variable length with new line separation
-no limit on number of links
+no limit on number of links in theory (in practice 8)
 id starts at 0
 header uses lower case 'w'
+
+In general max number of waypoints is 256

@@ -2,3 +2,4 @@ beta/
 __pycache__/
 *.pyc
 *.qc
+*.way
