@@ -65,11 +65,13 @@ def startConversion(inputFile, outputFile, wayFormat):
 			except ValueError:
 				print("Invalid waypoint co-ords")
 	
-	# Print out waypoint for now I guess
+	# Save waypoint file in the desired format
 	if wayFormat == "BETA":
 		saveBETA(wayArray, outputFile)
 	if wayFormat == "PSP":
 		savePSP(wayArray, outputFile)
+	if wayFormat == "PC":
+		savePC(wayArray, outputFile)
 	print("Conversion complete")
 	exit(0)
 
@@ -178,5 +180,20 @@ def savePSP(wayArray, outputFile):
 			outF.write(f"target = {waypoint['targets'][0]}\n")
 			[outF.write(f"target{i+1} = {waypoint['targets'][i]}\n") for i in range(1,8)]
 			outF.write("}\n\n") # Footer of waypoint
+
+def savePC(wayArray, outputFile):
+	with open(outputFile, "w") as outF:
+		for waypoint in wayArray:
+			outF.write("waypoint\n{\n") # Header
+			outF.write(f" id: {waypoint['id']}\n")
+			outF.write(f" origin: {waypoint['origin']}\n")
+			# Include door if present
+			if waypoint['door'] != "":
+				outF.write(f" door: {waypoint['door']}\n")
+			outF.write(" targets:\n [\n") # Header
+			numTargets = len(waypoint["targets"])
+			# Write waypoint links to file
+			[outF.write(f"  {waypoint['targets'][i]}\n") for i in range(numTargets)]
+			outF.write(" ]\n}\n\n") # Footer of waypoint
 
 parseArgs()
