@@ -134,7 +134,7 @@ def parsePC(oldWayFile):
 			# Round origin coords to 1 decimal place
 			originCoords = waydict["origin"].strip("'").split()
 			originCoords = [round(float(coord), 1) for coord in originCoords]
-			waydict["origin"] = str(originCoords[0]) + " " + str(originCoords[1]) + " " + str(originCoords[2])
+			waydict["origin"] = "'" + str(originCoords[0]) + " " + str(originCoords[1]) + " " + str(originCoords[2]) + "'"
 			# Replace id 0
 			if waydict["id"] == "0":
 				waydict["id"] = "255" # I sure do hope nobody has this many waypoints
